@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Visualization Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            color: #4a4a4a;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+        .main-layout {
+            display: flex;
+            gap: 20px;
+        }
+        .plot {
+            flex: 1;
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .controls {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .controls label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .controls select, .controls input, .controls button {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .controls button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .controls button:hover {
+            transform: translateY(-2px);
+        }
+        .metrics {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            flex-grow: 1;
+        }
+        .metrics h2 {
+            margin-top: 0;
+            color: #4a4a4a;
+        }
+        .metrics p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .param-group {
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div id="loading" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">Loading...</div>
+        <h1>Interactive ML Visualization Tool</h1>
+        <div class="main-layout">
+            <div class="right-panel">
+                <div class="controls">
+                    <label>Dataset:
+                        <select id="dataset">
+                            <optgroup label="Classification - Synthetic">
+                                <option value="make_moons">Make Moons</option>
+                                <option value="make_circles">Make Circles</option>
+                                <option value="make_classification">Make Classification</option>
+                                <option value="make_gaussian_quantiles">Make Gaussian Quantiles</option>
+                            </optgroup>
+                            <optgroup label="Clustering - Synthetic">
+                                <option value="make_blobs">Make Blobs</option>
+                            </optgroup>
+                            <optgroup label="Classification - Real">
+                                <option value="iris">Iris</option>
+                                <option value="wine">Wine</option>
+                                <option value="digits">Digits</option>
+                                <option value="mnist">MNIST</option>
+                                <option value="breast_cancer">Breast Cancer</option>
+                            </optgroup>
+                            <optgroup label="Regression - Real">
+                                <option value="california_housing" selected="selected">California Housing</option>
+                                <option value="diabetes">Diabetes</option>
+                            </optgroup>
+                        </select>
+                    </label>
+                    <label>Model:
+                        <select id="model">
+                            <optgroup label="Supervised - Classification">
+                                <option value="Logistic Regression">Logistic Regression</option>
+                                <option value="Perceptron">Perceptron</option>
+                                <option value="RidgeClassifier">RidgeClassifier</option>
+                                <option value="SGDClassifier">SGDClassifier</option>
+                                <option value="K-Nearest Neighbors">K-Nearest Neighbors</option>
+                                <option value="Linear SVM">Linear SVM</option>
+                                <option value="SVM">SVM</option>
+                                <option value="Decision Tree">Decision Tree</option>
+                                <option value="Random Forest">Random Forest</option>
+                                <option value="Extra Trees">Extra Trees</option>
+                                <option value="AdaBoost">AdaBoost</option>
+                                <option value="Gradient Boosting">Gradient Boosting</option>
+                                <option value="HistGradientBoosting">HistGradientBoosting</option>
+                                <option value="XGBoost">XGBoost</option>
+                                <option value="LightGBM">LightGBM</option>
+                                <option value="CatBoost">CatBoost</option>
+                                <option value="GaussianNB">GaussianNB</option>
+                                <option value="BernoulliNB">BernoulliNB</option>
+                                <option value="MultinomialNB">MultinomialNB</option>
+                                <option value="LDA">LDA</option>
+                                <option value="QDA">QDA</option>
+                                <option value="MLPClassifier">MLPClassifier</option>
+                                <option value="Bagging">Bagging</option>
+                                <option value="Stacking">Stacking</option>
+                                <option value="Voting">Voting</option>
+                            </optgroup>
+                            <optgroup label="Supervised - Regression">
+                                <option value="Linear Regression" selected="selected">Linear Regression</option>
+                                <option value="Ridge Regression">Ridge Regression</option>
+                                <option value="Lasso Regression">Lasso Regression</option>
+                                <option value="ElasticNet Regression">ElasticNet Regression</option>
+                                <option value="SVR">SVR</option>
+                                <option value="Decision Tree Regressor">Decision Tree Regressor</option>
+                                <option value="Random Forest Regressor">Random Forest Regressor</option>
+                                <option value="Gradient Boosting Regressor">Gradient Boosting Regressor</option>
+                                <option value="MLPRegressor">MLPRegressor</option>
+                                <option value="Bagging Regressor">Bagging Regressor</option>
+                            </optgroup>
+                            <optgroup label="Unsupervised - Clustering">
+                                <option value="KMeans">KMeans</option>
+                                <option value="DBSCAN">DBSCAN</option>
+                                <option value="Agglomerative Clustering">Agglomerative Clustering</option>
+                            </optgroup>
+                        </select>
+                    </label>
+                    <label>Dimension:
+                        <select id="dim">
+                            <option value="2d">2D</option>
+                            <option value="3d">3D</option>
+                        </select>
+                    </label>
+                    <br>
+                    <!-- Parameters grouped by model -->
+                    <div id="params-logistic" class="param-group">
+                    <label title="Inverse of regularization strength; smaller values specify stronger regularization.">C: <input type="range" id="C" min="0.01" max="10" step="0.01" value="1.0"><span id="C-value">1.0</span></label>
+                    <label title="Norm used in the penalization (regularization).">penalty: <select id="penalty"><option value="l2">l2</option><option value="l1">l1</option><option value="elasticnet">elasticnet</option><option value="none">none</option></select></label>
+                    <label title="Algorithm to use in the optimization problem.">solver: <select id="solver"><option value="lbfgs">lbfgs</option><option value="newton-cg">newton-cg</option><option value="liblinear">liblinear</option><option value="sag">sag</option><option value="saga">saga</option></select></label>
+                    <label title="Maximum number of iterations taken for the solvers to converge.">max_iter: <input type="range" id="max_iter" min="10" max="1000" step="10" value="100"><span id="max_iter-value">100</span></label>
+                    <label title="If ‘auto’, selects ‘ovr’ if the data is binary, otherwise ‘multinomial’.">multi_class: <select id="multi_class"><option value="auto">auto</option><option value="ovr">ovr</option><option value="multinomial">multinomial</option></select></label>
+                    <label title="The Elastic-Net mixing parameter, with 0 <= l1_ratio <= 1.">l1_ratio: <input type="range" id="l1_ratio" min="0" max="1" step="0.01" value="0.5"><span id="l1_ratio-value">0.5</span></label>
+                    </div>
+                    <div id="params-perceptron" class="param-group">
+                        <label>max_iter: <input type="range" id="max_iter" min="10" max="1000" step="10" value="1000"><span id="max_iter-value">1000</span></label>
+                        <label>eta0: <input type="range" id="eta0" min="0.01" max="1" step="0.01" value="1.0"><span id="eta0-value">1.0</span></label>
+                    </div>
+                    <div id="params-ridge" class="param-group">
+                        <label>alpha: <input type="range" id="alpha" min="0.0001" max="1" step="0.0001" value="1.0"><span id="alpha-value">1.0</span></label>
+                    </div>
+                    <div id="params-sgd" class="param-group">
+                        <label>max_iter: <input type="range" id="max_iter" min="10" max="1000" step="10" value="1000"><span id="max_iter-value">1000</span></label>
+                        <label>alpha: <input type="range" id="alpha" min="0.0001" max="1" step="0.0001" value="0.0001"><span id="alpha-value">0.0001</span></label>
+                        <label>penalty: <select id="penalty"><option value="l2">l2</option><option value="l1">l1</option><option value="elasticnet">elasticnet</option><option value="none">none</option></select></label>
+                        <label>l1_ratio: <input type="range" id="l1_ratio" min="0" max="1" step="0.01" value="0.5"><span id="l1_ratio-value">0.5</span></label>
+                    </div>
+                    <div id="params-knn" class="param-group">
+                        <label>n_neighbors: <input type="range" id="n_neighbors" min="1" max="20" step="1" value="5"><span id="n_neighbors-value">5</span></label>
+                    </div>
+                    <div id="params-svm" class="param-group">
+                        <label>C: <input type="range" id="C" min="0.01" max="10" step="0.01" value="1.0"><span id="C-value">1.0</span></label>
+                        <label>kernel: <select id="kernel"><option value="rbf">rbf</option><option value="linear">linear</option><option value="poly">poly</option><option value="sigmoid">sigmoid</option></select></label>
+                        <label>gamma: <input type="range" id="gamma" min="0.001" max="1" step="0.001" value="0.1"><span id="gamma-value">0.1</span></label>
+                        <label>max_iter: <input type="range" id="max_iter" min="10" max="1000" step="10" value="10000"><span id="max_iter-value">10000</span></label>
+                    </div>
+                    <div id="params-tree" class="param-group">
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="5"></label>
+                    </div>
+                    <div id="params-forest" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="100"></label>
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="5"></label>
+                    </div>
+                    <div id="params-adaboost" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="50"></label>
+                        <label>learning_rate: <input type="range" id="learning_rate" min="0.01" max="1" step="0.01" value="1.0"></label>
+                    </div>
+                    <div id="params-gb" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="100"></label>
+                        <label>learning_rate: <input type="range" id="learning_rate" min="0.01" max="1" step="0.01" value="0.1"></label>
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="3"></label>
+                    </div>
+                    <div id="params-histgb" class="param-group">
+                        <label>max_iter: <input type="range" id="max_iter" min="10" max="1000" step="10" value="100"></label>
+                        <label>learning_rate: <input type="range" id="learning_rate" min="0.01" max="1" step="0.01" value="0.1"></label>
+                    </div>
+                    <div id="params-xgboost" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="100"><span id="n_estimators-value">100</span></label>
+                        <label>learning_rate: <input type="range" id="learning_rate" min="0.01" max="1" step="0.01" value="0.1"><span id="learning_rate-value">0.1</span></label>
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="5"><span id="max_depth-value">5</span></label>
+                    </div>
+                    <div id="params-lightgbm" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="100"><span id="n_estimators-value">100</span></label>
+                        <label>learning_rate: <input type="range" id="learning_rate" min="0.01" max="1" step="0.01" value="0.1"><span id="learning_rate-value">0.1</span></label>
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="5"><span id="max_depth-value">5</span></label>
+                    </div>
+                    <div id="params-catboost" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="100"><span id="n_estimators-value">100</span></label>
+                        <label>learning_rate: <input type="range" id="learning_rate" min="0.01" max="1" step="0.01" value="0.1"><span id="learning_rate-value">0.1</span></label>
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="5"><span id="max_depth-value">5</span></label>
+                    </div>
+                    <div id="params-mlp" class="param-group">
+                        <label>hidden_layer_sizes: <input type="text" id="hidden_layer_sizes" value="100"></label>
+                        <label>max_iter: <input type="range" id="max_iter" min="10" max="1000" step="10" value="1000"><span id="max_iter-value">1000</span></label>
+                        <label>learning_rate: <input type="range" id="learning_rate" min="0.01" max="1" step="0.01" value="0.001"><span id="learning_rate-value">0.001</span></label>
+                    </div>
+                    <div id="params-bagging" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="10"></label>
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="5"></label>
+                    </div>
+                    <div id="params-voting" class="param-group">
+                        <label>voting: <select id="voting"><option value="hard">hard</option><option value="soft">soft</option></select></label>
+                    </div>
+                    <div id="params-ridge-reg" class="param-group">
+                        <label>alpha: <input type="range" id="alpha" min="0.0001" max="1" step="0.0001" value="1.0"><span id="alpha-value">1.0</span></label>
+                    </div>
+                    <div id="params-lasso-reg" class="param-group">
+                        <label>alpha: <input type="range" id="alpha" min="0.0001" max="1" step="0.0001" value="0.1"><span id="alpha-value">0.1</span></label>
+                    </div>
+                    <div id="params-elasticnet-reg" class="param-group">
+                        <label>alpha: <input type="range" id="alpha" min="0.0001" max="1" step="0.0001" value="0.1"><span id="alpha-value">0.1</span></label>
+                        <label>l1_ratio: <input type="range" id="l1_ratio" min="0" max="1" step="0.01" value="0.5"><span id="l1_ratio-value">0.5</span></label>
+                    </div>
+                    <div id="params-svr" class="param-group">
+                        <label>C: <input type="range" id="C" min="0.01" max="10" step="0.01" value="1.0"><span id="C-value">1.0</span></label>
+                        <label>kernel: <select id="kernel"><option value="rbf">rbf</option><option value="linear">linear</option><option value="poly">poly</option><option value="sigmoid">sigmoid</option></select></label>
+                        <label>gamma: <input type="range" id="gamma" min="0.001" max="1" step="0.001" value="0.1"><span id="gamma-value">0.1</span></label>
+                    </div>
+                    <div id="params-tree-reg" class="param-group">
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="5"><span id="max_depth-value">5</span></label>
+                    </div>
+                    <div id="params-forest-reg" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="100"><span id="n_estimators-value">100</span></label>
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="5"><span id="max_depth-value">5</span></label>
+                    </div>
+                    <div id="params-gb-reg" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="100"><span id="n_estimators-value">100</span></label>
+                        <label>learning_rate: <input type="range" id="learning_rate" min="0.01" max="1" step="0.01" value="0.1"><span id="learning_rate-value">0.1</span></label>
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="3"><span id="max_depth-value">3</span></label>
+                    </div>
+                    <div id="params-mlp-reg" class="param-group">
+                        <label>hidden_layer_sizes: <input type="text" id="hidden_layer_sizes" value="100"></label>
+                        <label>max_iter: <input type="range" id="max_iter" min="10" max="1000" step="10" value="1000"><span id="max_iter-value">1000</span></label>
+                        <label>learning_rate: <input type="range" id="learning_rate" min="0.01" max="1" step="0.01" value="0.001"><span id="learning_rate-value">0.001</span></label>
+                    </div>
+                    <div id="params-bagging-reg" class="param-group">
+                        <label>n_estimators: <input type="range" id="n_estimators" min="10" max="500" step="10" value="10"><span id="n_estimators-value">10</span></label>
+                        <label>max_depth: <input type="range" id="max_depth" min="1" max="50" step="1" value="5"><span id="max_depth-value">5</span></label>
+                    </div>
+                    <div id="params-kmeans" class="param-group">
+                        <label>n_clusters: <input type="range" id="n_clusters" min="2" max="10" step="1" value="3"><span id="n_clusters-value">3</span></label>
+                    </div>
+                    <div id="params-dbscan" class="param-group">
+                        <label>eps: <input type="range" id="eps" min="0.1" max="2" step="0.1" value="0.5"><span id="eps-value">0.5</span></label>
+                        <label>min_samples: <input type="range" id="min_samples" min="1" max="10" step="1" value="5"><span id="min_samples-value">5</span></label>
+                    </div>
+                    <div id="params-agglomerative" class="param-group">
+                        <label>n_clusters: <input type="range" id="n_clusters" min="2" max="10" step="1" value="3"><span id="n_clusters-value">3</span></label>
+                    </div>
+                    <div id="params-linear-reg" class="param-group">
+                        <label>fit_intercept: <input type="checkbox" id="fit_intercept" checked></label>
+                        <label>normalize: <input type="checkbox" id="normalize"></label>
+                    </div>
+                    <button id="update-btn">Update</button>
+                    <div id="error-message" style="color: red; font-weight: bold; margin-top: 10px;"></div>
+                </div>
+                <div class="metrics" id="metrics">
+                    <!-- Metrics will be displayed here -->
+                </div>
+            </div>
+            <div class="plot" id="plot-container">
+                <!-- Plotly plot will be injected here -->
+            </div>
+        </div>
+    </div>
+
+            <script>
+        function showParams(model) {
+            // Hide all param groups
+            const groups = document.querySelectorAll('.param-group');
+            groups.forEach(group => group.style.display = 'none');
+
+            // Map model to param group
+            const modelMap = {
+                'Logistic Regression': 'params-logistic',
+                'Perceptron': 'params-perceptron',
+                'RidgeClassifier': 'params-ridge',
+                'SGDClassifier': 'params-sgd',
+                'K-Nearest Neighbors': 'params-knn',
+                'Linear SVM': 'params-svm',
+                'SVM': 'params-svm',
+                'Decision Tree': 'params-tree',
+                'Random Forest': 'params-forest',
+                'Extra Trees': 'params-forest',
+                'AdaBoost': 'params-adaboost',
+                'Gradient Boosting': 'params-gb',
+                'HistGradientBoosting': 'params-histgb',
+                'XGBoost': 'params-xgboost',
+                'LightGBM': 'params-lightgbm',
+                'CatBoost': 'params-catboost',
+                'GaussianNB': null,
+                'BernoulliNB': null,
+                'MultinomialNB': null,
+                'LDA': null,
+                'QDA': null,
+                'MLPClassifier': 'params-mlp',
+                'Bagging': 'params-bagging',
+                'Stacking': null,
+                'Voting': 'params-voting',
+                'Linear Regression': 'params-linear-reg',
+                'Ridge Regression': 'params-ridge-reg',
+                'Lasso Regression': 'params-lasso-reg',
+                'ElasticNet Regression': 'params-elasticnet-reg',
+                'SVR': 'params-svr',
+                'Decision Tree Regressor': 'params-tree-reg',
+                'Random Forest Regressor': 'params-forest-reg',
+                'Gradient Boosting Regressor': 'params-gb-reg',
+                'MLPRegressor': 'params-mlp-reg',
+                'Bagging Regressor': 'params-bagging-reg',
+                'KMeans': 'params-kmeans',
+                'DBSCAN': 'params-dbscan',
+                'Agglomerative Clustering': 'params-agglomerative'
+            };
+
+            const groupId = modelMap[model];
+            if (groupId) {
+                document.getElementById(groupId).style.display = 'block';
+            }
+        }
+
+        function getParams() {
+            const model = document.getElementById('model').value;
+            const paramMap = {
+                'Logistic Regression': ['C', 'penalty', 'solver', 'max_iter', 'multi_class', 'l1_ratio'],
+                'Perceptron': ['max_iter', 'eta0'],
+                'RidgeClassifier': ['alpha'],
+                'SGDClassifier': ['max_iter', 'alpha', 'penalty', 'l1_ratio'],
+                'K-Nearest Neighbors': ['n_neighbors'],
+                'Linear SVM': ['C', 'max_iter'],
+                'SVM': ['C', 'kernel', 'gamma', 'max_iter'],
+                'Decision Tree': ['max_depth'],
+                'Random Forest': ['n_estimators', 'max_depth'],
+                'Extra Trees': ['n_estimators', 'max_depth'],
+                'AdaBoost': ['n_estimators', 'learning_rate'],
+                'Gradient Boosting': ['n_estimators', 'learning_rate', 'max_depth'],
+                'HistGradientBoosting': ['max_iter', 'learning_rate'],
+                'XGBoost': ['n_estimators', 'learning_rate', 'max_depth'],
+                'LightGBM': ['n_estimators', 'learning_rate', 'max_depth'],
+                'CatBoost': ['n_estimators', 'learning_rate', 'max_depth'],
+                'MLPClassifier': ['hidden_layer_sizes', 'max_iter', 'learning_rate'],
+                'Bagging': ['n_estimators', 'max_depth'],
+                'Stacking': [],
+                'Voting': ['voting'],
+                'Linear Regression': ['fit_intercept', 'normalize'],
+                'Ridge Regression': ['alpha'],
+                'Lasso Regression': ['alpha'],
+                'ElasticNet Regression': ['alpha', 'l1_ratio'],
+                'SVR': ['C', 'kernel', 'gamma'],
+                'Decision Tree Regressor': ['max_depth'],
+                'Random Forest Regressor': ['n_estimators', 'max_depth'],
+                'Gradient Boosting Regressor': ['n_estimators', 'learning_rate', 'max_depth'],
+                'MLPRegressor': ['hidden_layer_sizes', 'max_iter', 'learning_rate'],
+                'Bagging Regressor': ['n_estimators', 'max_depth'],
+                'KMeans': ['n_clusters'],
+                'DBSCAN': ['eps', 'min_samples'],
+                'Agglomerative Clustering': ['n_clusters']
+            };
+            const relevantParams = paramMap[model] || [];
+            const params = {};
+            for (const p of relevantParams) {
+                const el = document.getElementById(p);
+                if (el) {
+                    if (el.type === 'range' || el.type === 'number') {
+                        params[p] = parseFloat(el.value);
+                    } else if (el.type === 'text') {
+                        if (p === 'hidden_layer_sizes') {
+                            params[p] = el.value.split(',').map(x => parseInt(x.trim()));
+                        } else {
+                            params[p] = el.value;
+                        }
+                    } else if (el.tagName === 'SELECT') {
+                        params[p] = el.value;
+                    } else if (el.type === 'checkbox') {
+                        params[p] = el.checked;
+                    }
+                }
+            }
+            return {
+                dataset: document.getElementById('dataset').value,
+                model: model,
+                dim: document.getElementById('dim').value,
+                params: params,
+                dataset_params: {}
+            };
+        }
+
+        function saveParams() {
+            const params = getParams();
+            localStorage.setItem('ml_tool_params', JSON.stringify(params));
+        }
+
+        function loadParams() {
+            // Clear localStorage to reset to default selections
+            localStorage.removeItem('ml_tool_params');
+            const saved = localStorage.getItem('ml_tool_params');
+            if (saved) {
+                const params = JSON.parse(saved);
+                document.getElementById('dataset').value = params.dataset;
+                document.getElementById('model').value = params.model;
+                document.getElementById('dim').value = params.dim;
+                // Set individual params
+                for (const [key, value] of Object.entries(params.params)) {
+                    const el = document.getElementById(key);
+                    if (el) {
+                        if (el.type === 'range') {
+                            el.value = value;
+                            const span = document.getElementById(key + '-value');
+                            if (span) span.textContent = value;
+                        } else if (el.type === 'text') {
+                            el.value = value.join ? value.join(',') : value;
+                        } else if (el.tagName === 'SELECT') {
+                            el.value = value;
+                        } else if (el.type === 'checkbox') {
+                            el.checked = value;
+                        }
+                    }
+                }
+                showParams(params.model);
+            }
+        }
+
+        function saveResults(data) {
+            // Save only metrics to localStorage to avoid quota exceeded error
+            if (data && data.metrics) {
+                localStorage.setItem('ml_tool_results_metrics', JSON.stringify(data.metrics));
+            }
+        }
+
+        function loadResults() {
+            const savedMetrics = localStorage.getItem('ml_tool_results_metrics');
+            if (savedMetrics) {
+                const metrics = JSON.parse(savedMetrics);
+                return { metrics: metrics, plot_html: '' }; // plot_html empty to avoid large data
+            }
+            return null;
+        }
+
+        function displayResults(data) {
+            document.getElementById('error-message').textContent = '';
+            // Display plot
+            const plotContainer = document.getElementById('plot-container');
+            plotContainer.innerHTML = data.plot_html;
+
+            // Display metrics
+            const metricsDiv = document.getElementById('metrics');
+            let metricsHTML = '<h2>Metrics</h2>';
+            if (data.metrics.accuracy !== undefined) {
+                metricsHTML += `<p>Accuracy: ${data.metrics.accuracy.toFixed(2)}</p>`;
+                metricsHTML += `<p>Precision: ${data.metrics.precision.toFixed(2)}</p>`;
+                metricsHTML += `<p>Recall: ${data.metrics.recall.toFixed(2)}</p>`;
+                metricsHTML += `<p>F1 Score: ${data.metrics.f1_score.toFixed(2)}</p>`;
+                metricsHTML += `<p>Confusion Matrix: ${JSON.stringify(data.metrics.confusion_matrix)}</p>`;
+            }
+            if (data.metrics.mse !== undefined) {
+                metricsHTML += `<p>MSE: ${data.metrics.mse.toFixed(2)}</p>`;
+                metricsHTML += `<p>R²: ${data.metrics.r2.toFixed(2)}</p>`;
+            }
+            if (data.metrics.silhouette_score !== undefined) {
+                metricsHTML += `<p>Silhouette Score: ${data.metrics.silhouette_score.toFixed(2)}</p>`;
+            }
+            metricsHTML += `<p>Train Time: ${data.metrics.train_time.toFixed(2)}s</p>`;
+            metricsHTML += `<p>Infer Time: ${data.metrics.infer_time.toFixed(2)}s</p>`;
+            metricsDiv.innerHTML = metricsHTML;
+        }
+
+        document.getElementById('model').addEventListener('change', function() {
+            showParams(this.value);
+        });
+
+        let isUpdating = false;
+
+        document.getElementById('update-btn').addEventListener('click', function() {
+            if (isUpdating) return; // Prevent multiple simultaneous requests
+            isUpdating = true;
+            saveParams();
+            const paramsData = getParams();
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('update-btn').disabled = true;
+            fetch('/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(paramsData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errData => {
+                        throw new Error(errData.error || 'Unknown error');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('update-btn').disabled = false;
+                displayResults(data);
+                saveResults(data);
+                isUpdating = false;
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('update-btn').disabled = false;
+                document.getElementById('error-message').textContent = error.message;
+                console.error('Error:', error);
+                isUpdating = false;
+            });
+        });
+
+        // Auto update plot on parameter change with debouncing
+        let updateTimeout;
+        function debounceUpdate() {
+            clearTimeout(updateTimeout);
+            updateTimeout = setTimeout(() => {
+                document.getElementById('update-btn').click();
+            }, 500); // 500ms delay
+        }
+
+        const paramInputs = document.querySelectorAll('.controls input, .controls select');
+        paramInputs.forEach(input => {
+            if (input.type === 'range') {
+                input.addEventListener('input', debounceUpdate); // Real-time for sliders
+            } else {
+                input.addEventListener('change', debounceUpdate); // On change for selects
+            }
+        });
+
+        // Update span values for sliders
+        function updateSpanValue(sliderId, spanId) {
+            const slider = document.getElementById(sliderId);
+            const span = document.getElementById(spanId);
+            if (slider && span) {
+                span.textContent = slider.value;
+                slider.addEventListener('input', function() {
+                    span.textContent = this.value;
+                });
+            }
+        }
+
+        // Initialize span updates for all sliders
+        updateSpanValue('alpha', 'alpha-value');
+        updateSpanValue('l1_ratio', 'l1_ratio-value');
+        updateSpanValue('C', 'C-value');
+        updateSpanValue('gamma', 'gamma-value');
+        updateSpanValue('max_depth', 'max_depth-value');
+        updateSpanValue('n_estimators', 'n_estimators-value');
+        updateSpanValue('learning_rate', 'learning_rate-value');
+        updateSpanValue('max_iter', 'max_iter-value');
+        updateSpanValue('n_clusters', 'n_clusters-value');
+        updateSpanValue('eps', 'eps-value');
+        updateSpanValue('min_samples', 'min_samples-value');
+
+        // Initial load
+        loadParams();
+        showParams(document.getElementById('model').value); // Show params for default model
+        const savedResults = loadResults();
+        if (savedResults) {
+            displayResults(savedResults);
+        } else {
+            document.getElementById('update-btn').click();
+        }
+    </script>
+</body>
+</html>
