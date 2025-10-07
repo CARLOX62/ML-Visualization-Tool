@@ -32,7 +32,7 @@ ML-Visualization-Tool/
 ## ⚡ Installation & Usage  
 
 ### 1️⃣ Clone the repository  
-git clone https://github.com/your-username/ML-Visualization-Tool.git  
+git clone https://github.com/CARLOX62/ML-Visualization-Tool.git  
 cd ML-Visualization-Tool  
 
 ### 2️⃣ Create a virtual environment & install dependencies  
